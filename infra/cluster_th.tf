@@ -46,12 +46,32 @@ resource "aws_ecr_repository" "thunderbolt" {
   }
 }
 
+resource "kubernetes_service_account" "EKSServiceAccount" {
+  metadata {
+    name      = local.k8s_service_account_name
+    namespace = local.k8s_service_account_namespace
+    labels = {
+      "app.kubernetes.io/component": "controller"
+      "app.kubernetes.io/name": local.k8s_service_account_name
+    }
+    annotations = {
+      # This annotation is needed to tell the service account which IAM role it
+      # should assume
+      "eks.amazonaws.com/role-arn" = aws_iam_role.LoadBalancerEKSServiceRole.arn
+    }
+  }
+}
+
 output "endpoint" {
   value = aws_eks_cluster.EKSCluster.endpoint
 }
 
 output "kubeconfig-certificate-authority-data" {
   value = aws_eks_cluster.EKSCluster.certificate_authority[0].data
+}
+
+output "eks-oidc-issuer" {
+  value = local.eks_oidc_issuer
 }
 
 # terraform init

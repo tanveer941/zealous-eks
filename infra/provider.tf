@@ -1,9 +1,9 @@
 terraform {
   backend "s3" {
-    bucket = "icm-pe-dev-us-east-1-repo"
-    key    = "eih-thunderbolt/application.tfstate"
+    bucket = "maintain-state"
+    key    = "zealous/application_eks.tfstate"
     region = "us-east-1"
-    dynamodb_table = "eih-thunderbolt"
+    dynamodb_table = "zealous"
     profile = "default"
   }
 }

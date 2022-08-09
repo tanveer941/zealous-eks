@@ -83,12 +83,35 @@ resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
 }
 
 # Load Balancer Role
-resource "aws_iam_role" "LoadBalancerEKSRole" {
-  name = "AmazonEKSLoadBalancerControllerRole"
-  assume_role_policy = file("${path.module}/load-balancer-role-trust-policy.json")
-  tags = local.common_tags
+data "aws_iam_policy_document" "LoadBalancerEKSServicePolicy" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    principals {
+      type = "Federated"
+      identifiers = [
+        "arn:aws:iam::${data.aws_caller_identity.Me.account_id}:oidc-provider/${local.eks_oidc_issuer}"
+      ]
+    }
+
+    # Limit the scope so that only our desired service account can assume this role
+    condition {
+      test     = "StringEquals"
+      variable = "${local.eks_oidc_issuer}:sub"
+      values = [
+        "system:serviceaccount:kube-system:${local.k8s_service_account_name}"
+      ]
+    }
+  }
 }
-resource "aws_iam_role_policy_attachment" "AWSLoadBalancerEKSRole" {
-  policy_arn = "arn:aws:iam::${data.aws_caller_identity.Me.account_id}:policy/AWSLoadBalancerControllerIAMPolicy"
-  role    = aws_iam_role.LoadBalancerEKSRole.id
+
+resource "aws_iam_role_policy" "LoadBalancerServicePolicy" {
+  name = "${var.ProjectName}-LoadBalancerServicePolicy"
+  role = aws_iam_role.LoadBalancerEKSServiceRole.id
+  policy = file("${path.module}/iam_policy.json")
+}
+
+resource "aws_iam_role" "LoadBalancerEKSServiceRole" {
+  name = "${var.ProjectName}-LoadBalancerServiceRole"
+  assume_role_policy = data.aws_iam_policy_document.LoadBalancerEKSServicePolicy.json
+  tags = local.common_tags
 }
