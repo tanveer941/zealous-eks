@@ -17,7 +17,6 @@ data "aws_iam_policy_document" "EKSLoadBalancerPolicy" {
 resource "aws_iam_role" "EKSAppRole" {
   name = "${var.ProjectName}-EKSRole"
   assume_role_policy = data.aws_iam_policy_document.EKSRoleAssumePolicy.json
-  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.Me.account_id}:policy/ADSK-Boundary"
   tags = local.common_tags
 }
 
@@ -39,7 +38,6 @@ resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnlyEKS
 # Worker Node role
 resource "aws_iam_role" "WorkerNodeRole" {
   name = "${var.ProjectName}-WorkerNodeEKSRole"
-  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.Me.account_id}:policy/ADSK-Boundary"
   assume_role_policy = jsonencode({
   Statement = [{
     Action = "sts:AssumeRole"
@@ -87,7 +85,6 @@ resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
 # Load Balancer Role
 resource "aws_iam_role" "LoadBalancerEKSRole" {
   name = "AmazonEKSLoadBalancerControllerRole"
-  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.Me.account_id}:policy/ADSK-Boundary"
   assume_role_policy = file("${path.module}/load-balancer-role-trust-policy.json")
   tags = local.common_tags
 }
