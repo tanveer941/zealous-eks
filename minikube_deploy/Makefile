@@ -12,3 +12,9 @@ start_zealous_app: deploy_zealous_in_mini
 stop_zealous_app:
 	kubectl delete -f zealous_mini_deploy.yaml && \
 	kubectl delete svc zealous
+
+run_zealous_job:
+	kubectl create -f simplejob.yaml
+
+run_zealous_cron_job:
+	kubectl create -f cronjob.yaml
