@@ -1,11 +1,5 @@
 terraform {
-  backend "s3" {
-    bucket = "maintain-state"
-    key    = "zealous/application_eks.tfstate"
-    region = "us-east-1"
-    dynamodb_table = "zealous"
-    profile = "default"
-  }
+  backend "s3" {}
 }
 
 provider "aws" {
