@@ -17,7 +17,7 @@ data "aws_eks_cluster_auth" "cluster" {
   name = aws_eks_cluster.EKSCluster.name
 }
 
-resource "aws_eks_node_group" "worker-node-group" {
+resource "aws_eks_node_group" "ZealousWorkerNodes" {
   cluster_name  = aws_eks_cluster.EKSCluster.name
   node_group_name = "${var.ClusterName}-workernodes"
   node_role_arn  = aws_iam_role.WorkerNodeRole.arn
@@ -38,8 +38,8 @@ resource "aws_eks_node_group" "worker-node-group" {
 }
 
 
-resource "aws_ecr_repository" "thunderbolt" {
-  name = "thunderbolt"
+resource "aws_ecr_repository" "zealous_eks" {
+  name = "zealous_eks"
   image_tag_mutability = "MUTABLE"
   image_scanning_configuration {
     scan_on_push = true
@@ -62,6 +62,16 @@ resource "kubernetes_service_account" "EKSServiceAccount" {
   }
 }
 
+data "tls_certificate" "eks" {
+  url = aws_eks_cluster.EKSCluster.identity[0].oidc[0].issuer
+}
+
+resource "aws_iam_openid_connect_provider" "eks" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
+  url             = aws_eks_cluster.EKSCluster.identity[0].oidc[0].issuer
+}
+
 output "endpoint" {
   value = aws_eks_cluster.EKSCluster.endpoint
 }
@@ -74,6 +84,6 @@ output "eks-oidc-issuer" {
   value = local.eks_oidc_issuer
 }
 
-# terraform init
+# terraform init -reconfigure -backend-config="zealous-app.conf"
 # terraform apply -input=false -auto-approve
 # terraform destroy -auto-approve
