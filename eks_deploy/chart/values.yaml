@@ -7,3 +7,6 @@ servicePort: 8080
 replicas: 1
 subnet1: subnet-0f98db89c49bee569
 subnet2: subnet-081f340abebcdb38d
+moniker: ICMPE-C-UE1
+group_name: icm
+owner_name: icm_pe
